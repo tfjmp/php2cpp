@@ -883,8 +883,8 @@ char *aszSeen;
 /**************************************************************/
 void ProcessFile(const char *fname)
 {
-    const char *ptr;
-    const char *ptr2;
+    char *ptr;
+    char *ptr2;
     if (!fname) {
 	fname = aszOut;
 	ptr = strchr(aszOut,'\"');

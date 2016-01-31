@@ -7,6 +7,14 @@ are available from http://www.mibsoftware.com/
 
 Outputs are not derived works of this software.
 ***********************************************************/
+
+/***********************************************************
+Modified
+2016, Thomas PASQUIER
+Computer Laboratory
+University of Cambridge
+***********************************************************/
+
 #include <stdio.h>
 #include <string.h>
 #include <ctype.h>
@@ -49,25 +57,25 @@ unsigned int countbl(const char *sptr);
 unsigned int countid(const char *sptr);
 unsigned int counttoch(const char *sptr,char ch);
 
-#define MVARPREFIX "_s_"
+#define MVARPREFIX "_m_"
 #define VARPREFIX "_s_"
 
 void CPPnstr(const char *str,int len)
 {
-    if (fileOutMain) {
-	fwrite(str,1,len,fileOutMain);
+    if (fileOutHeader) {
+       fwrite(str,1,len,fileOutHeader);
+    }else if (fileOutMain) {
+	     fwrite(str,1,len,fileOutMain);
     }
     if (fileOutFunctions) {
-	fwrite(str,1,len,fileOutFunctions);
+	     fwrite(str,1,len,fileOutFunctions);
     }
-    if (fileOutHeader) {
-	fwrite(str,1,len,fileOutHeader);
-    }
+
     if (fileOutClass) {
-	fwrite(str,1,len,fileOutClass);
+	     fwrite(str,1,len,fileOutClass);
     }
     if (aszOut) {
-	astrn0cat(&aszOut,str,len);
+	     astrn0cat(&aszOut,str,len);
     }
 }
 
@@ -260,65 +268,69 @@ return ptr - sptr;
 /**************************************************************/
 int transhint(const char *sptr,int len)
 { /* Not re-entrant */
-
-if (handler != transhint) {
+  if (handler != transhint) {
     if (!strncmp(sptr,"/*int*/",7)||
-	!strncmp(sptr,"/*bool*/",8)||
-	!strncmp(sptr,"/*void*/",8)||
-	!strncmp(sptr,"/*string*/",10)||
-	!strncmp(sptr,"/*mixed*/",9)||
-	!strncmp(sptr,"/*array*/",9)||
-	!strncmp(sptr,"/*string_array*/",16)) {
-	if (nestlevel == 0) { /* 20010823 */
-	    inVdecl = 1;
-	    fileOutHeader = fileHeader;
-	}
-	CPPnstr(sptr+2,counttoch(sptr+2,'*'));
-	CPPstr(" ");
-	return 4 + counttoch(sptr+2,'*');
-    } else if ((len >= 6) &&!strncmp(sptr,"/*c++:",6)) {
-	SetHandler(transhint);
-	return 6;
-    } else if ((len >= 8) &&!strncmp(sptr,"/*php:*/",8)) {
-	CPPstr("/*php:"); /* 20010823 Fix */
-	SetHandler(transcomment); // Ignore until /**/
-	return 8;
+      !strncmp(sptr,"/*float*/",8)||
+      !strncmp(sptr,"/*bool*/",8)||
+      !strncmp(sptr,"/*void*/",8)||
+      !strncmp(sptr,"/*string*/",10)||
+      !strncmp(sptr,"/*mixed*/",9)||
+      !strncmp(sptr,"/*array*/",9)||
+      !strncmp(sptr,"/*string_array*/",16)) {
+        FILE* tmp=fileOutMain;
+        if (nestlevel == 0) {
+          inVdecl = 1;
+          /* goes in header, not main */
+          fileOutHeader = fileHeader;
+          fileOutMain=0;
+          CPPstr("static ");
+        }
+        CPPnstr(sptr+2,counttoch(sptr+2,'*'));
+        CPPstr(" ");
+        fileOutMain=tmp;
+        return 4 + counttoch(sptr+2,'*');
+      } else if ((len >= 6) &&!strncmp(sptr,"/*c++:",6)) {
+        SetHandler(transhint);
+        return 6;
+      } else if ((len >= 8) &&!strncmp(sptr,"/*php:*/",8)) {
+        CPPstr("/*php:"); /* 20010823 Fix */
+        SetHandler(transcomment); // Ignore until /**/
+        return 8;
+      }
+      return 0;
     }
-    return 0;
-}
-const char *ptr = sptr;
+    const char *ptr = sptr;
 
-while(ptr < sptr + len) {
-    if ((ptr <= sptr+len-2) && !strncmp(ptr,"*/",2)) {
-	if (inVdecl) {
-	    CPPstr(" ");
-	}
-	SetHandler(0); /* return to old handler */
-	return ptr+2 - sptr;
+    while(ptr < sptr + len) {
+      if ((ptr <= sptr+len-2) && !strncmp(ptr,"*/",2)) {
+        if (inVdecl) {
+          CPPstr(" ");
+        }
+        SetHandler(0); /* return to old handler */
+        return ptr+2 - sptr;
+      }
+      if (*ptr == '$') {
+        char *asz = 0;
+        int len = countid(ptr+1)+1;
+        astrn0cpy(&asz,ptr,len);
+        CPPstr(VARPREFIX);
+        ptr++;
+        CPPnstr(ptr,len-1);
+        ptr += len-1;
+        astrfree(&asz);
+      } else if (inVdecl && (*ptr == ';')) {
+        inVdecl = 0;
+        if (fileOutHeader) {
+          fputs(";\n",fileOutHeader);
+          CPPline();
+          fileOutHeader = 0;
+        }
+      } else {
+        CPPchar(*ptr);
+        ptr++;
+      }
     }
-    if (*ptr == '$') {
-	char *asz = 0;
-	int len = countid(ptr+1)+1;
-	astrn0cpy(&asz,ptr,len);
-	CPPstr(VARPREFIX);
-	ptr++;
-	CPPnstr(ptr,len-1);
-	ptr += len-1;
-	astrfree(&asz);
-    } else if (inVdecl && (*ptr == ';')) {
-	inVdecl = 0;
-	if (fileOutHeader) {
-	    fputs(";\n",fileOutHeader);
-	    CPPline();
-	    fileOutHeader = 0;
-	}
-    } else {
-	CPPchar(*ptr);
-	ptr++;
-    }
-}
-return ptr - sptr;
-
+    return ptr - sptr;
 } /* transhint */
 /**************************************************************/
 
@@ -931,7 +943,7 @@ void ProcessFile(const char *fname)
     while(afgets(&asz,f)) {
 	nLINE++;
 	if (aszfname) {
-//	    CPPline();  /* for #line directives everywhere */
+	    //CPPline();  /* for #line directives everywhere */
 	}
 
 	/* a PHP source file is made up of HTML and blocks of
@@ -983,21 +995,9 @@ void ProcessFile(const char *fname)
 int main(int argc,char **argv)
 {
     FILE *f;
-    if (argc != 3) {
+    if (argc != 4) {
 	fprintf(stderr,"%s",
-"usage: php2c++ input.php output.cpp\n");
-	fprintf(stderr,"%s",
-"\nphp2c++ Version 20011030\n");
-	fprintf(stderr,"%s",
-"Copyright 2001, Forrest J. Cavalier III d-b-a Mib Software\n");
-	fprintf(stderr,"%s",
-"\nLicense, documentation, and original and updated source code\n");
-	fprintf(stderr,"%s",
-"are available from http://www.mibsoftware.com/\n");
-	fprintf(stderr,"%s",
-"\n");
-	fprintf(stderr,"%s",
-"Outputs are not derived works of this software.\n");
+"usage: php2c++ input.php output.cpp [function name]\n");
 	return -1;
     }
     f = fopen(argv[2],"wb");
@@ -1005,7 +1005,8 @@ int main(int argc,char **argv)
     /* Four passes: declarations first */
     fputs(
 "/* ------------ php2c++ pass 1: Declarations ----------------*/\n",f);
-    fputs("#include \"libphp.h\"\n",f);
+    fputs("#include \"libphp.h\"\n\n",f);
+    fputs("using namespace std;\n",f);
     fileHeader = f;
     fileMain = 0;
     ProcessFile(argv[1]);
@@ -1026,9 +1027,9 @@ int main(int argc,char **argv)
     astrfree(&aszSeen);
     fileMain = f;
     fileOutMain = fileMain;
-    fputs("int main(int argc,char **argv)\n{\n",f);
+    fprintf(f, "void %s( void )\n{\n", argv[3]);
     ProcessFile(argv[1]);
-    fputs("} /* main */\n",f);
+    fprintf(f, "} /* %s */\n", argv[3]);
 
     fputs(
 "/* ------------ php2c++ pass 4: Function bodies -------------*/\n",f);

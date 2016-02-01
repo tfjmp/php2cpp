@@ -1,4 +1,7 @@
 <?php
+  require_once('./test.php');
+  echo 'test';
+
   class MyClass{
      /*int*/ $a;
      /*double*/ $b;
@@ -30,7 +33,11 @@ function /*void*/ my_function(){
 ?>
 
 <?php
+require_once('./test.php');
+
+
 /*int*/ $x=3;
+echo $x;
 $x+=4+4;
 echo $x;
 my_function();

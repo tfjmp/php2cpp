@@ -4,5 +4,6 @@ all:
 	g++ -c -I./ example.cpp -o example.o
 
 clean:
+	rm -f _tmp.php
 	rm -f example.cpp
 	rm -f example.o

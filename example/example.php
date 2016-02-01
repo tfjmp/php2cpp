@@ -34,7 +34,10 @@ function /*void*/ my_function(){
 $x+=4+4;
 echo $x;
 my_function();
-/*c++:MyClass*/ foo /*php:*/= new MyClass/**/;
-foo->setA(4);
-echo foo->getA();
+$foo = new MyClass;
+$foo->setA(4);
+echo $foo->getA();
+$bar = new MyClass;
+$bar->setB(3.14);
+echo $bar->getB();
 ?>

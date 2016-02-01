@@ -57,7 +57,7 @@ unsigned int countbl(const char *sptr);
 unsigned int countid(const char *sptr);
 unsigned int counttoch(const char *sptr,char ch);
 
-#define MVARPREFIX "_m_"
+#define MVARPREFIX "_s_"
 #define VARPREFIX "_s_"
 
 void CPPnstr(const char *str,int len)
@@ -270,7 +270,7 @@ int transhint(const char *sptr,int len)
 { /* Not re-entrant */
   if (handler != transhint) {
     if (!strncmp(sptr,"/*int*/",7)||
-      !strncmp(sptr,"/*float*/",8)||
+      !strncmp(sptr,"/*double*/",8)||
       !strncmp(sptr,"/*bool*/",8)||
       !strncmp(sptr,"/*void*/",8)||
       !strncmp(sptr,"/*string*/",10)||

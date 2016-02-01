@@ -9,4 +9,4 @@ For long term viable solution, looking into the details of HPHPc (Facebook PHP t
 
 In example libphp.h represent what needs to be implemented to compile to the target architecture (i.e. need to re-implement all the built in in PHP functions). At the moment not much there (I have another file with actual code).
 
-Variables are not behaving as they would in PHP, ideally want to define custom conversion operators (and other) for those types and try to mimic PHP behaviour.
+Variables are not behaving as they would in PHP. Need to implement custom basic types and ideally want to define custom conversion operators (and other) for those types and try to mimic PHP behaviour.

@@ -1010,9 +1010,9 @@ int main(int argc,char **argv)
     fputs("#include \"response_php.hpp\"\n\n",f);
     fputs("using namespace std;\n",f);
     fputs("namespace http{\n",f);
-    fprintf(f, "class Response%s: public ResponsePHP{\n", argv[3]);
+    fprintf(f, "class %s: public ResponsePHP{\n", argv[3]);
     fputs("public:\n", f);
-    fprintf(f, "Response%s(Request r) : ResponsePHP(r){}\n", argv[3]);
+    fprintf(f, "%s(Request r) : ResponsePHP(r){}\n", argv[3]);
 
     //fputs(
 //"/* ------------ phpc++ pass 1: Declarations ----------------*/\n",f);

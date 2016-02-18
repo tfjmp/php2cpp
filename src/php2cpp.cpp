@@ -280,10 +280,7 @@ int transhint(const char *sptr,int len)
         FILE* tmp=fileOutMain;
         if (nestlevel == 0) {
           inVdecl = 1;
-          /* goes in header, not main */
-          fileOutHeader = fileHeader;
-          fileOutMain=0;
-          CPPstr("static ");
+ 	        //fileOutHeader = fileHeader;
         }
         CPPnstr(sptr+2,counttoch(sptr+2,'*'));
         CPPstr(" ");
@@ -659,10 +656,10 @@ if (handler != transReserved) {
 	} else if ((len == 8)&&!strncasecmp(ptr,"function",len)) {
 	    if (!inCdecl && (nestlevel==0)) {
 		inFdecl = 1;
-		fileOutHeader = fileHeader;
+		//fileOutHeader = fileHeader;
 		fileOutFunctions = fileFunctions;
 		fileOutMain = 0;
-		if (fileHeader||fileFunctions) {
+		if (fileFunctions) {
 		    CPPline();
 		}
 	    }
@@ -1002,12 +999,25 @@ int main(int argc,char **argv)
     }
     f = fopen(argv[2],"wb");
 
-    /* Four passes: declarations first */
-    fputs(
-"/* ------------ php2c++ pass 1: Declarations ----------------*/\n",f);
-    fputs("#include \"libphp.h\"\n\n",f);
+    /* Declarations first */
+    fputs("/*\n",f);
+    fputs("* Generated with php2cpp\n",f);
+    fputs("* Available at https://github.com/tfjmp/php2cpp\n",f);
+    fputs("* Derive from http://www.mibsoftware.com/php2cpp/\n",f);
+    fputs("* This is only a prototype and likely to be buggy.\n",f);
+    fputs("* Use at your own risk.\n",f);
+    fputs("*/\n\n",f);
+    fputs("#include \"response_php.hpp\"\n\n",f);
     fputs("using namespace std;\n",f);
-    fileHeader = f;
+    fputs("namespace http{\n",f);
+    fprintf(f, "class Response%s: public ResponsePHP{\n", argv[3]);
+    fputs("public:\n", f);
+    fprintf(f, "Response%s(Request r) : ResponsePHP(r){}\n", argv[3]);
+
+    //fputs(
+//"/* ------------ phpc++ pass 1: Declarations ----------------*/\n",f);
+
+    /*fileHeader = f;
     fileMain = 0;
     ProcessFile(argv[1]);
     fileHeader = 0;
@@ -1015,7 +1025,7 @@ int main(int argc,char **argv)
 
 
     fputs(
-"/* ------------ php2c++ pass 2: Class Declarations ----------*/\n",f);
+"/* ------------ php2c++ pass 1: Class Declarations ----------*/\n",f);
     astrfree(&aszSeen);
     fileClass = f;
     ProcessFile(argv[1]);
@@ -1023,23 +1033,28 @@ int main(int argc,char **argv)
     fileOutClass = 0; /* 2001-10-30 */
 
     fputs(
-"/* ------------ php2c++ pass 3: Code outside functions ------*/\n",f);
+"/* ------------ php2c++ pass 2: Code outside functions ------*/\n",f);
     astrfree(&aszSeen);
     fileMain = f;
     fileOutMain = fileMain;
-    fprintf(f, "void %s( void )\n{\n", argv[3]);
+    fputs("void compute()\n{\n", f);
     ProcessFile(argv[1]);
-    fprintf(f, "} /* %s */\n", argv[3]);
+    fputs("} /* compute() */\n", f);
 
     fputs(
-"/* ------------ php2c++ pass 4: Function bodies -------------*/\n",f);
+"/* ------------ php2c++ pass 3: Function -------------*/\n",f);
     astrfree(&aszSeen);
     fileFunctions = f;
     fileMain = 0;
     fileOutMain = fileMain;
     ProcessFile(argv[1]);
-    fclose(f);
 
+    fputs(
+"/* ------------ php2c++: Closing -------------*/\n",f);
+    fputs("};//class\n",f);
+    fputs("}//namespace http\n",f);
+
+    fclose(f);
     return 0;
 } /* main */
 

@@ -1,9 +1,8 @@
 all:
-	ruby ../prepare.rb example.php _tmp.php
-	../php2cpp.out _tmp.php example.cpp _example
-	g++ -c -I./ example.cpp -o example.o
+	../prepare.rb example.php _tmp.php
+	../php2cpp _tmp.php tmp.cpp Example
+	../uncrustify -c ../build/uncrustify/etc/gnu-indent.cfg -f tmp.cpp > response_example.cpp
 
 clean:
 	rm -f _tmp.php
-	rm -f example.cpp
-	rm -f example.o
+	rm -f response_example.cpp

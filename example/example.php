@@ -28,7 +28,6 @@
 function /*void*/ my_function(){
   /*int*/ $v=4;
   echo $v;
-  echo $x;
 }
 ?>
 

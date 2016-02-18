@@ -1,6 +1,6 @@
 #!/usr/bin/env ruby
 
-abort "Usage: ruby prepare.rb [target-file] [output-file]" unless !ARGV[0].nil? && !ARGV[1].nil?
+abort "Usage: prepare.rb [target-file] [output-file]" unless !ARGV[0].nil? && !ARGV[1].nil?
 
 src = File.read ARGV[0]
 

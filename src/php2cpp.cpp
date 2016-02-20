@@ -270,7 +270,8 @@ int transhint(const char *sptr,int len)
 { /* Not re-entrant */
   if (handler != transhint) {
     if (!strncmp(sptr,"/*int*/",7)||
-      !strncmp(sptr,"/*double*/",8)||
+      !strncmp(sptr,"/*double*/",10)||
+      !strncmp(sptr,"/*cstr_t*/",10)||
       !strncmp(sptr,"/*bool*/",8)||
       !strncmp(sptr,"/*void*/",8)||
       !strncmp(sptr,"/*string*/",10)||

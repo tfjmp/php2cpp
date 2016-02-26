@@ -1009,7 +1009,7 @@ int main(int argc,char **argv)
     fputs("*/\n\n",f);
     fputs("#include \"response_php.hpp\"\n\n",f);
     fputs("using namespace std;\n",f);
-    fputs("namespace http{\n",f);
+    fputs("namespace php{\n",f);
     fprintf(f, "class %s: public ResponsePHP{\n", argv[3]);
     fputs("public:\n", f);
     fprintf(f, "%s(Request r) : ResponsePHP(r){}\n", argv[3]);

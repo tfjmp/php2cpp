@@ -41,6 +41,7 @@ def prepare src, directory
   src.scan(/null/).each do |n|
     src = src.gsub(n, "NULL ")
   end
+  src = src.gsub("\n", "")
   return src
 end
 

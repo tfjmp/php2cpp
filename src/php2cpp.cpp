@@ -1052,7 +1052,7 @@ int main(int argc,char **argv)
     fputs(
 "/* ------------ php2c++: Closing -------------*/\n",f);
     fputs("};//class\n",f);
-    fputs("}//namespace http\n",f);
+    fputs("}//namespace php\n",f);
 
     fclose(f);
     return 0;
